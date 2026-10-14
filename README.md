@@ -102,7 +102,7 @@ Setup, once:
 2. In **Authentication → URL Configuration**:
    - set *Site URL* to your deployed address (e.g. `https://guitarcoach.vercel.app`);
    - add `https://<that address>/account` and `http://localhost:3000/account` to *Redirect URLs*.
-3. In **Authentication → Emails**, add `{{ .Token }}` to the *Magic Link* and *Confirm signup* templates. On a phone the sign-in link often opens in a different browser from the app, so typing the code is more reliable. The free plan sends only a few emails per hour.
+3. Optional: in **Authentication → Emails**, add `{{ .Token }}` to the *Magic Link* and *Confirm signup* templates, so the email also carries a code. This matters on a phone, where the sign-in link often opens in a different browser from the app; an iPhone home-screen app never shares storage with Safari. Supabase only allows template edits with your own SMTP server; a Gmail address with an app password works (`smtp.gmail.com`, port 465). Without it, use Google sign-in on phones.
 4. For Google sign-in:
    - In Google Cloud Console, create an OAuth client (type *Web application*) with the authorised redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`.
    - Paste its client ID and secret into Supabase under **Authentication → Sign In / Providers → Google**.

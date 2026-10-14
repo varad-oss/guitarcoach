@@ -91,7 +91,7 @@ function SignInForm({ online }: { online: boolean }) {
             <Input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
           </Field>
           <Button type="submit" variant="primary" icon="mail" disabled={!online || busy !== null || !email.trim()}>
-            {busy === "send" ? "Sending…" : "Email me a sign-in code"}
+            {busy === "send" ? "Sending…" : "Email me a sign-in link"}
           </Button>
           <p className="text-sm text-text-3">No password. A new account is created the first time.</p>
         </form>
@@ -104,9 +104,9 @@ function SignInForm({ online }: { online: boolean }) {
           }}
         >
           <Notice tone="good" title={`Email sent to ${sentTo}`}>
-            Type the code from the email here. Opening its link works too, but only in this same browser.
+            Open the link in the email in this same browser, or, if the email shows a code, type it below.
           </Notice>
-          <Field label="Code from the email" htmlFor="code">
+          <Field label="Code from the email (if it has one)" htmlFor="code">
             <Input
               id="code"
               inputMode="numeric"
