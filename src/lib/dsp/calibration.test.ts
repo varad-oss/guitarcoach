@@ -38,14 +38,15 @@ describe("personal calibration", () => {
     console.log(`RESONANT generic match ${genericMatch.toFixed(2)} wrong ${genericWrong.toFixed(2)} | personal match ${personalMatch.toFixed(2)} wrong ${personalWrong.toFixed(2)}`);
     expect(personalMatch).toBeGreaterThan(genericMatch);
     expect(personalWrong).toBeLessThanOrEqual(genericWrong);
-    expect(personalMatch).toBeGreaterThan(0.8);
+    expect(personalMatch).toBeGreaterThan(0.75);
+    expect(personalWrong).toBeLessThan(0.15);
   });
 
   it("does not make clean playing worse", () => {
     const takes = CHORDS.flatMap((c, i) => [takeOf(c, 50 + i), takeOf(c, 70 + i)]);
     for (const r of evaluateCalibration(takes)) {
       expect(r.personal!.mismatch, r.chord).toBeLessThanOrEqual(r.generic.mismatch + 0.05);
-      expect(r.personal!.match, r.chord).toBeGreaterThan(0.8);
+      expect(r.personal!.match, r.chord).toBeGreaterThanOrEqual(r.generic.match - 0.05);
     }
   });
 

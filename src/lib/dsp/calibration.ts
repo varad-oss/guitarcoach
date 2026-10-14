@@ -5,7 +5,7 @@
  */
 
 import { normaliseChord, parseChord } from "../music/chords";
-import { expectedTemplates, judgeFrame, rankChords, rotateChroma, type PersonalProfile } from "./chordTemplates";
+import { expectedTemplates, judgeFrame, rankChords, rotateChroma, templateFromPcs, type PersonalProfile } from "./chordTemplates";
 import { chordsCompatible } from "../music/chords";
 
 export interface CalibrationFrame {
@@ -43,6 +43,20 @@ export function meanChroma(frames: CalibrationFrame[]): Float64Array {
   return normalise(acc);
 }
 
+/**
+ * Share of the learned sound in each personal template; the rest is the
+ * built-in template. 0.5 did best on GuitarSet (see README).
+ */
+const LEARNED_WEIGHT = 0.5;
+const AMBIENT_WEIGHT = 0.6;
+
+function blendWithBuiltIn(learned: Float64Array, chord: string): Float64Array {
+  const c = parseChord(chord);
+  if (!c) return learned;
+  const builtIn = normalise(templateFromPcs(c.pcs, c.root));
+  return normalise(learned.map((x, i) => LEARNED_WEIGHT * x + (1 - LEARNED_WEIGHT) * builtIn[i]));
+}
+
 export function buildProfile(takes: CalibrationTake[]): PersonalProfile | null {
   const byChord = new Map<string, CalibrationTake[]>();
   for (const t of takes) {
@@ -51,11 +65,9 @@ export function buildProfile(takes: CalibrationTake[]): PersonalProfile | null {
     byChord.set(k, [...(byChord.get(k) ?? []), t]);
   }
   if (byChord.size === 0) return null;
-  const exact = new Map<string, Float64Array>();
   const famAcc = new Map<string, Float64Array>();
   for (const [chord, ts] of byChord) {
     const tmpl = meanChroma(ts.flatMap((t) => t.frames));
-    exact.set(chord, tmpl);
     const c = parseChord(chord)!;
     if (c.bass !== null) continue; // slash chords don't generalise to a chord type
     const rooted = rotateChroma(tmpl, -c.root);
@@ -64,8 +76,34 @@ export function buildProfile(takes: CalibrationTake[]): PersonalProfile | null {
     famAcc.set(c.suffix, acc);
   }
   const family = new Map<string, Float64Array>();
-  for (const [q, acc] of famAcc) family.set(q, normalise(acc));
-  return { exact, family };
+  for (const [q, acc] of famAcc) family.set(q, blendWithBuiltIn(normalise(acc), `C${q}`));
+  const ambient = ambientOf(byChord);
+  return family.size || ambient ? { family, ambient } : null;
+}
+
+/**
+ * Energy that shows up at the same absolute pitch class in the takes of
+ * different chords, beyond what the chords themselves explain. Only counted
+ * when it appears in at least two different chords, so a single chord's
+ * voicing isn't mistaken for the room.
+ */
+function ambientOf(byChord: Map<string, CalibrationTake[]>): Float64Array | null {
+  if (byChord.size < 2) return null;
+  const residuals: Array<{ pcs: number[]; r: Float64Array }> = [];
+  for (const [chord, ts] of byChord) {
+    const c = parseChord(chord)!;
+    const heard = meanChroma(ts.flatMap((t) => t.frames));
+    const expected = normalise(templateFromPcs(c.pcs, c.root));
+    residuals.push({ pcs: c.pcs, r: heard.map((x, i) => Math.max(0, x - expected[i])) });
+  }
+  const ambient = new Float64Array(12);
+  for (let i = 0; i < 12; i++) {
+    // Only chords that don't contain this note can show it as extra; take the
+    // lower median of those so a single chord's voicing can't dominate.
+    const vals = residuals.filter((x) => !x.pcs.includes(i)).map((x) => x.r[i]).sort((a, b) => a - b);
+    if (vals.length >= 2) ambient[i] = AMBIENT_WEIGHT * vals[Math.floor((vals.length - 1) / 2)];
+  }
+  return ambient.some((x) => x > 0.02) ? ambient : null;
 }
 
 /** A take that clearly sounds like another chord (likely a fumble or wrong label). */

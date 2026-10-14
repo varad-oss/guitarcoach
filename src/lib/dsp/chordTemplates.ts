@@ -6,7 +6,7 @@
  * tone. Templates can also be built from the exact notes of a known voicing.
  */
 
-import { chordsCompatible, parseChord, pcToName } from "../music/chords";
+import { chordsCompatible, chordsOverlap, parseChord, pcToName } from "../music/chords";
 
 const HARMONIC_OFFSETS = [0, 12, 19, 24, 28, 31];
 const DECAY = 0.6;
@@ -94,16 +94,32 @@ export interface Candidate {
 }
 
 /**
- * Personal templates learned from the player's own calibration takes. Applied
- * to every candidate chord alike (exact recordings, or the learned sound of a
- * chord type moved to another root), so it sharpens matching without biasing
- * towards the chord the player is expected to play.
+ * Personal templates learned from the player's own calibration takes: the
+ * learned sound of each chord type, blended with the built-in template and
+ * moved to every root, so it applies to all candidate chords alike. Per-chord
+ * templates were tried and dropped: on GuitarSet they made a rival chord look
+ * likelier whenever that rival had been recorded, which raised false
+ * "wrong chord" verdicts.
  */
 export interface PersonalProfile {
-  /** Normalised sounding chord symbol → template. */
-  exact: Map<string, Float64Array>;
   /** Chord quality ("", "m", "7" …) → template with its root moved to C. */
   family: Map<string, Float64Array>;
+  /**
+   * Pitch classes the player's setup adds to every chord (a ringing body or
+   * room note, sympathetic strings), at their absolute pitch. Added to every
+   * template, built-in and personal, so it doesn't favour any chord.
+   */
+  ambient: Float64Array | null;
+}
+
+function withAmbient(t: ArrayLike<number>, profile: PersonalProfile | null): ArrayLike<number> {
+  if (!profile?.ambient) return t;
+  let n = 0;
+  for (let i = 0; i < 12; i++) n += t[i] * t[i];
+  n = Math.sqrt(n) || 1;
+  const out = new Float64Array(12);
+  for (let i = 0; i < 12; i++) out[i] = t[i] / n + profile.ambient[i];
+  return out;
 }
 
 let activeProfile: PersonalProfile | null = null;
@@ -124,9 +140,6 @@ export function personalTemplate(symbol: string, profile: PersonalProfile | null
   if (!profile) return null;
   const c = parseChord(symbol);
   if (!c) return null;
-  const key = c.rootName + c.suffix;
-  const exact = profile.exact.get(key) ?? profile.exact.get(pcToName(c.root, false) + c.suffix) ?? profile.exact.get(pcToName(c.root, true) + c.suffix);
-  if (exact) return exact;
   const fam = profile.family.get(c.suffix);
   return fam ? rotateChroma(fam, c.root) : null;
 }
@@ -135,9 +148,9 @@ export function personalTemplate(symbol: string, profile: PersonalProfile | null
 export function rankChords(chroma: ArrayLike<number>, bassPc = -1, profile: PersonalProfile | null = activeProfile): Candidate[] {
   return vocabulary()
     .map((v) => {
-      let s = correlation(chroma, v.template);
+      let s = correlation(chroma, withAmbient(v.template, profile));
       const p = profile ? personalTemplate(v.symbol, profile) : null;
-      if (p) s = Math.max(s, correlation(chroma, p));
+      if (p) s = Math.max(s, correlation(chroma, withAmbient(p, profile)));
       return { symbol: v.symbol, score: s - v.penalty + (bassPc === v.root ? 0.03 : 0) };
     })
     .sort((a, b) => b.score - a.score);
@@ -157,7 +170,7 @@ export type FrameVerdict = "match" | "mismatch" | "unclear";
 export interface FrameJudgement {
   verdict: FrameVerdict;
   expectedScore: number;
-  /** Best-matching chord that is NOT an acceptable rendition of the expected chord. */
+  /** Best-matching chord that is NOT an acceptable rendition of the expected chord (nor shares nearly all its notes). */
   competitor: Candidate | null;
   best: Candidate;
 }
@@ -173,8 +186,8 @@ export function judgeFrame(chroma: ArrayLike<number>, expected: string, template
   const best = ranked[0];
   const exp = parseChord(expected);
   const expBass = exp ? (bassPc === exp.root || bassPc === exp.bass ? 0.03 : 0) : 0;
-  const expectedScore = Math.max(...templates.map((t) => correlation(chroma, t))) + expBass;
-  const competitor = ranked.find((c) => !chordsCompatible(expected, c.symbol)) ?? null;
+  const expectedScore = Math.max(...templates.map((t) => correlation(chroma, withAmbient(t, profile)))) + expBass;
+  const competitor = ranked.find((c) => !chordsCompatible(expected, c.symbol) && !chordsOverlap(expected, c.symbol)) ?? null;
   let verdict: FrameVerdict = "unclear";
   if (expectedScore >= 0.55 && (!competitor || expectedScore >= competitor.score - 0.03)) verdict = "match";
   else if (competitor && competitor.score >= 0.6 && competitor.score - expectedScore >= 0.1) verdict = "mismatch";

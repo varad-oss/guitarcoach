@@ -338,6 +338,21 @@ export function chordsCompatible(expected: string, detected: string): boolean {
   return false;
 }
 
+/**
+ * Whether two chords share so many notes that one can stand in for the other:
+ * every note of one is in the other, with at most one extra. A rootless Ebmaj7
+ * sounds exactly like Gm, and Am7 like C with an added A, so hearing one when
+ * the other is expected is not evidence of a wrong chord.
+ */
+export function chordsOverlap(expected: string, detected: string): boolean {
+  const e = parseChord(expected);
+  const d = parseChord(detected);
+  if (!e || !d) return false;
+  const inE = d.pcs.filter((pc) => e.pcs.includes(pc)).length;
+  if (inE === d.pcs.length) return true;
+  return inE === e.pcs.length && d.pcs.length - e.pcs.length <= 1;
+}
+
 /** A compact label describing a chord's family, used for UI copy. */
 export function familyLabel(f: ChordFamily): string {
   return {

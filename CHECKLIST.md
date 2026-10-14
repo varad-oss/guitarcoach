@@ -57,11 +57,11 @@ Status legend: [x] done and verified by tests and/or in the browser, [~] done wi
 
 ## Personal chord calibration (added 2026-10-15)
 - [x] Record labelled takes per chord (stored as chroma on this device), mislabel check, per-chord report (built-in vs calibrated, leave-one-take-out)
-- [x] Personal templates applied to all candidate chords, generalised by chord type; can be switched off
-- [ ] Evaluation on GuitarSet (public dataset of real guitar recordings) — planned next
+- [x] Personal chord-type templates (blended with built-in) plus an ambient/resonance profile, applied to all candidate chords alike; can be switched off
+- [x] Evaluation on GuitarSet (180 real recordings, `npm run eval:guitarset`); led to the note-overlap rule and the calibration redesign (README has results)
 
 ## Not done / future
-- [ ] Validation of chord recognition and timing against real guitar recordings and real microphones
+- [~] Validation against real recordings: chord judging evaluated on GuitarSet; not yet with the user's own guitar/mic, and timing not yet validated on real audio
 - [ ] Companion browser extension (the bookmarklet covers the same need for now)
 - [ ] Higher-quality time-stretching (e.g. a WASM phase vocoder) for very slow speeds
 - [ ] Strum-direction detection (deliberately not attempted without acoustic evidence)

@@ -51,3 +51,6 @@ next-env.d.ts
 # local tooling / personal
 .claude/
 writing-block.md
+
+# downloaded evaluation datasets
+/datasets
