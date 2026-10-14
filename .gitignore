@@ -54,3 +54,4 @@ writing-block.md
 
 # downloaded evaluation datasets
 /datasets
+!.env.example

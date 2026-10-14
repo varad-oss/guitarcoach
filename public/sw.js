@@ -1,10 +1,10 @@
 /* GuitarCoach service worker: offline app shell + cached static assets.
    Song data lives in IndexedDB, so it is available offline regardless.
    Link import (/api/*) always needs the network and is never cached. */
-const VERSION = "gc-v2";
+const VERSION = "gc-v3";
 const SHELL = `${VERSION}-shell`;
 const ASSETS = `${VERSION}-assets`;
-const ROUTES = ["/", "/songs", "/add", "/song", "/studio", "/tuner", "/calibrate", "/align", "/report", "/progress", "/settings"];
+const ROUTES = ["/", "/songs", "/add", "/song", "/studio", "/tuner", "/calibrate", "/align", "/report", "/progress", "/settings", "/account"];
 const EXTRA = ["/manifest.webmanifest", "/worklets/capture-processor.js", "/icons/icon.svg", "/icons/icon-192.png", "/vendor/pdf.worker.min.mjs"];
 
 async function precache() {

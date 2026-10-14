@@ -12,6 +12,8 @@ import { Metronome } from "@/lib/audio/metronome";
 import { resumeAudio } from "@/lib/audio/engine";
 import { computeLatency } from "@/lib/audio/latency";
 import { ADAPTERS } from "@/lib/import/registry";
+import { useAccount } from "@/lib/sync/account";
+import Link from "next/link";
 
 async function readStorage(): Promise<{ usage: number; quota: number; persisted: boolean } | null> {
   if (!navigator.storage?.estimate) return null;
@@ -35,6 +37,8 @@ function Section({ id, title, children, description }: { id: string; title: stri
 export function SettingsPage() {
   const [settings, update, ready] = useSettings();
   const online = useOnline();
+  const account = useAccount();
+  const synced = Boolean(account.user);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [storage, setStorage] = useState<{ usage: number; quota: number; persisted: boolean } | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
@@ -129,8 +133,24 @@ export function SettingsPage() {
         <p className="text-sm text-text-3">Importing from a link needs an internet connection. Pasting, files, practice and the tuner all work offline.</p>
       </Section>
 
-      <Section id="data" title="Your data" description="There's no account. Everything lives in this browser profile.">
-        <Notice tone="warn">Clearing this site&apos;s data in your browser deletes your songs, recordings and history. Make a backup first.</Notice>
+      <Section
+        id="data"
+        title="Your data"
+        description={synced ? "Saved in this browser and synced to your account." : "Everything lives in this browser profile."}
+      >
+        {account.enabled && (
+          <p className="text-text-2">
+            {synced ? (
+              <>Signed in as {account.user?.email ?? "your account"}. </>
+            ) : (
+              <>Sign in to keep a copy in your account and use your songs on your other devices. </>
+            )}
+            <Link href="/account" className="text-accent underline underline-offset-2">
+              {synced ? "Account and sync" : "Sign in"}
+            </Link>
+          </p>
+        )}
+        {!synced && <Notice tone="warn">Clearing this site&apos;s data in your browser deletes your songs, recordings and history. Make a backup first.</Notice>}
         {storage && (
           <p className="text-sm text-text-2">
             Using {mb(storage.usage)} of about {mb(storage.quota)} available.{" "}
@@ -203,7 +223,7 @@ export function SettingsPage() {
         {restoreMsg && <Notice tone={restoreMsg.tone}>{restoreMsg.text}</Notice>}
         <div>
           <Button variant="danger" icon="trash" onClick={() => setConfirmClear(true)}>
-            Delete everything
+            {synced ? "Remove everything from this device" : "Delete everything"}
           </Button>
         </div>
       </Section>
@@ -225,15 +245,19 @@ export function SettingsPage() {
 
       <ConfirmDialog
         open={confirmClear}
-        title="Delete all GuitarCoach data?"
-        body="Every song, recording, practice session and setting on this device will be deleted. This can't be undone without a backup."
-        confirmLabel="Delete everything"
+        title={synced ? "Remove everything from this device?" : "Delete all GuitarCoach data?"}
+        body={
+          synced
+            ? "Songs, recordings, sessions and settings are removed from this device only. Your account keeps them, so they download again on the next sync. To delete a song everywhere, delete it in My Songs."
+            : "Every song, recording, practice session and setting on this device will be deleted. This can't be undone without a backup."
+        }
+        confirmLabel={synced ? "Remove from this device" : "Delete everything"}
         danger
         onClose={() => setConfirmClear(false)}
         onConfirm={async () => {
           await clearAllData();
           await saveSettings({});
-          setRestoreMsg({ tone: "good", text: "All data deleted." });
+          setRestoreMsg({ tone: "good", text: synced ? "Removed from this device." : "All data deleted." });
         }}
       />
     </div>

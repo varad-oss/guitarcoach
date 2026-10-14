@@ -9,6 +9,29 @@ import { useLiveQuery, useOnline, useSettings } from "@/lib/hooks";
 import { getCalibration } from "@/lib/db/db";
 import { buildProfile } from "@/lib/dsp/calibration";
 import { setPersonalProfile } from "@/lib/dsp/chordTemplates";
+import { startAccount, useAccount, type AccountState } from "@/lib/sync/account";
+
+/** Sidebar / header button for the account, showing whether sync is healthy. */
+function AccountLink({ account, compact, online }: { account: AccountState; compact?: boolean; online: boolean }) {
+  if (!account.enabled) return null;
+  const signedIn = Boolean(account.user);
+  const problem = signedIn && (account.status === "error" || !online);
+  const label = !signedIn ? "Sign in to sync" : problem ? "Not synced" : account.status === "syncing" ? "Syncing…" : "Synced";
+  return (
+    <Link
+      href="/account"
+      title={compact ? label : undefined}
+      aria-label={compact ? `Account: ${label}` : undefined}
+      className={cx(
+        "flex items-center gap-3 rounded-lg text-text-2 hover:text-text hover:bg-surface transition-colors",
+        compact ? "justify-center h-10 w-10" : "h-10 px-3",
+      )}
+    >
+      <Icon name={!signedIn ? "user" : problem ? "cloudOff" : "cloud"} size={19} className={problem ? "text-warn" : signedIn ? "text-accent" : undefined} />
+      {!compact && <span className="text-[15px] truncate">{label}</span>}
+    </Link>
+  );
+}
 
 const NAV: Array<{ href: string; label: string; icon: IconName; match: (p: string) => boolean }> = [
   { href: "/", label: "Home", icon: "home", match: (p) => p === "/" },
@@ -42,6 +65,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [settings] = useSettings();
   const immersive = pathname.startsWith("/studio") || pathname.startsWith("/tuner");
   const calibration = useLiveQuery(getCalibration, []);
+  const account = useAccount();
+
+  useEffect(() => startAccount(), []);
 
   // Apply the player's personal chord templates everywhere chords are judged.
   useEffect(() => {
@@ -98,12 +124,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </ul>
-        {!online && (
-          <div className={cx("mt-auto flex items-center gap-2 text-sm text-warn", immersive ? "justify-center" : "px-3")} role="status">
-            <Icon name="wifiOff" size={17} />
-            {!immersive && <span>Offline</span>}
-          </div>
-        )}
+        <div className={cx("mt-auto flex flex-col gap-1 w-full", immersive && "items-center")}>
+          {!online && (
+            <div className={cx("flex items-center gap-2 text-sm text-warn h-8", immersive ? "justify-center" : "px-3")} role="status">
+              <Icon name="wifiOff" size={17} />
+              {!immersive && <span>Offline</span>}
+            </div>
+          )}
+          <AccountLink account={account} compact={immersive} online={online} />
+        </div>
       </nav>
 
       <div className="flex-1 min-w-0 flex flex-col">
@@ -115,6 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Icon name="wifiOff" size={16} /> Offline
               </span>
             )}
+            <AccountLink account={account} compact online={online} />
             <Link href="/settings" aria-label="Settings" className="h-10 w-10 inline-flex items-center justify-center text-text-2 rounded-lg">
               <Icon name="settings" size={20} />
             </Link>

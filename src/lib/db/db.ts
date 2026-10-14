@@ -1,6 +1,8 @@
 /**
- * IndexedDB persistence. Everything stays in this browser profile; nothing is
- * uploaded. Clearing site data removes it, which is why backups exist.
+ * IndexedDB persistence. This browser profile is always the working copy; when
+ * the player signs in, src/lib/sync copies changes to and from their account.
+ * Without an account, clearing site data removes everything, which is why
+ * backups exist.
  */
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
@@ -13,7 +15,7 @@ import {
   type Song,
 } from "../song/model";
 import { defaultAlignment } from "../song/alignment";
-import { DEFAULT_SETTINGS, withDefaults, type Settings } from "./settings";
+import { DEFAULT_SETTINGS, sharedSettingsChanged, withDefaults, type Settings } from "./settings";
 import { migrateSong } from "./migrate";
 import type { CalibrationData } from "../dsp/calibration";
 
@@ -23,17 +25,35 @@ interface GuitarCoachDB extends DBSchema {
   audio: { key: string; value: AudioBlobRecord };
   sessions: { key: string; value: PracticeSession; indexes: { "by-song": string; "by-started": string } };
   kv: { key: string; value: { key: string; value: unknown } };
+  /** Sync bookkeeping: fingerprint of each item as last synced, plus the sync cursor. */
+  syncmeta: { key: string; value: SyncMeta };
+}
+
+export interface SyncMeta {
+  key: string;
+  hash?: string;
+  modified?: number;
+  /** Uploaded-audio marker (recordings only). */
+  audioSize?: number;
+  /** "__state" row only. */
+  userId?: string;
+  cursor?: string;
 }
 
 export const DB_NAME = "guitarcoach";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<GuitarCoachDB>> | null = null;
 
 export function getDb(): Promise<IDBPDatabase<GuitarCoachDB>> {
   if (typeof indexedDB === "undefined") return Promise.reject(new Error("IndexedDB is not available in this browser."));
   dbPromise ??= openDB<GuitarCoachDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
+    upgrade(db, oldVersion) {
+      if (oldVersion < 2 && db.objectStoreNames.contains("songs")) {
+        db.createObjectStore("syncmeta", { keyPath: "key" });
+        return;
+      }
+      db.createObjectStore("syncmeta", { keyPath: "key" });
       const songs = db.createObjectStore("songs", { keyPath: "id" });
       songs.createIndex("by-updated", "updatedAt");
       songs.createIndex("by-created", "createdAt");
@@ -250,8 +270,16 @@ export async function deleteRecording(id: string): Promise<void> {
   notify();
 }
 
+/** Where to fetch audio this device doesn't have yet (set by sync when signed in). */
+let audioFallback: ((recordingId: string) => Promise<Blob | undefined>) | null = null;
+export function setAudioFallback(fn: typeof audioFallback): void {
+  audioFallback = fn;
+}
+
 export async function getAudioBlob(recordingId: string): Promise<Blob | undefined> {
-  return (await (await getDb()).get("audio", recordingId))?.blob;
+  const local = (await (await getDb()).get("audio", recordingId))?.blob;
+  if (local || !audioFallback) return local;
+  return audioFallback(recordingId).catch(() => undefined);
 }
 
 // ---------- sessions ----------
@@ -289,7 +317,8 @@ export async function getSettings(): Promise<Settings> {
 
 export async function saveSettings(change: Partial<Settings> | ((s: Settings) => Settings)): Promise<Settings> {
   const current = await getSettings();
-  const next = typeof change === "function" ? change(current) : withDefaults({ ...current, ...change });
+  let next = typeof change === "function" ? change(current) : withDefaults({ ...current, ...change });
+  if (sharedSettingsChanged(current, next)) next = { ...next, updatedAt: nowIso() };
   await (await getDb()).put("kv", { key: "settings", value: next });
   notify();
   return next;
@@ -316,13 +345,16 @@ export async function saveCalibration(change: (c: CalibrationData) => Calibratio
 
 export async function clearAllData(): Promise<void> {
   const db = await getDb();
-  const tx = db.transaction(["songs", "recordings", "audio", "sessions", "kv"], "readwrite");
+  // Sync bookkeeping goes too, so a signed-in device downloads the account's
+  // data again instead of treating the wipe as "delete everything".
+  const tx = db.transaction(["songs", "recordings", "audio", "sessions", "kv", "syncmeta"], "readwrite");
   await Promise.all([
     tx.objectStore("songs").clear(),
     tx.objectStore("recordings").clear(),
     tx.objectStore("audio").clear(),
     tx.objectStore("sessions").clear(),
     tx.objectStore("kv").clear(),
+    tx.objectStore("syncmeta").clear(),
   ]);
   await tx.done;
   notify();

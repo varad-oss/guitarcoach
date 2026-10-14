@@ -28,6 +28,21 @@ export interface Settings {
   theme: "dark" | "light";
   /** Use templates learned from the player's own calibration takes. */
   usePersonalCalibration: boolean;
+  /** When a setting that follows the player between devices last changed. */
+  updatedAt?: string;
+}
+
+/** Settings that describe this device (its mic, its latency, its screen) and don't sync. */
+export const DEVICE_SETTINGS = ["latencyMs", "latencyMeasuredAt", "micDeviceId", "fontScale", "storageNoticeDismissed"] as const;
+
+/** Whether two settings differ in anything that follows the player. */
+export function sharedSettingsChanged(a: Settings, b: Settings): boolean {
+  const strip = (s: Settings) => {
+    const c: Record<string, unknown> = { ...s };
+    for (const k of [...DEVICE_SETTINGS, "updatedAt"]) delete c[k];
+    return JSON.stringify(c, Object.keys(c).sort());
+  };
+  return strip(a) !== strip(b);
 }
 
 export const DEFAULT_SETTINGS: Settings = {
