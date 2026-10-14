@@ -108,7 +108,7 @@ Setup, once:
    - Paste its client ID and secret into Supabase under **Authentication → Sign In / Providers → Google**.
 5. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (from **Project Settings → API Keys**) in `.env.local` and in your hosting provider, then rebuild. Both values are meant to be public; the access rules above protect the data. See `.env.example`.
 
-Free Supabase projects pause after a week without use. The app keeps working on each device in the meantime; restore the project from the dashboard to sync again.
+Free Supabase projects pause after a week without any activity. To prevent that, a daily Vercel Cron job (`vercel.json`) calls `/api/keepalive`, which makes one tiny read from the database. Without a signed-in user, the access rules return no rows. If you set a `CRON_SECRET` environment variable in Vercel, only Vercel's scheduler can call that route. If the project pauses anyway, the app keeps working on each device; restore the project from the Supabase dashboard to sync again.
 
 The sync engine (`src/lib/sync/engine.ts`) is unit-tested with two simulated devices. It covers edits, deletions, conflicts, per-device settings, wiping a device, merging on first sign-in, separate accounts, and audio upload and download.
 
