@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Copied third-party builds and generated test output.
+    "public/vendor/**",
+    "test-results/**",
+    "playwright-report/**",
+    "e2e/.fixtures/**",
   ]),
 ]);
 

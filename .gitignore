@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# copied vendor assets (scripts/copy-assets.mjs)
+/public/vendor
+
+# playwright
+/test-results
+/playwright-report
+/e2e/.fixtures
+
+# local tooling / personal
+.claude/
+writing-block.md
