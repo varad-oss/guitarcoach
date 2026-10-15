@@ -57,15 +57,17 @@ Every session ends with a report: chords correct, changes on time, timing error 
 | **Tuner** | Standard tuning, cents and a confidence reading. |
 | **Free play** | Shows the chord it hears, nothing else. |
 
+<p align="center">
+  <img src="docs/screenshots/tuner.png" alt="The tuner hearing an A string: A, target A2, in tune, 110.0 Hz, clear pitch" width="80%">
+</p>
+
 ### Yours, on every device
 It installs to your phone's home screen and works offline. Sign in with Google or email to sync songs, recordings, history and calibration between your laptop and phone.
 
 <p align="center">
-  <img src="docs/screenshots/phone-studio.png" alt="The Practice Studio on a phone" width="30%">
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/phone-song.png" alt="A song page on a phone" width="30%">
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/tuner.png" alt="The tuner hearing an A string, in tune" width="34%">
+  <img src="docs/screenshots/phone-studio.png" alt="The Practice Studio on a phone" width="34%">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/phone-song.png" alt="A song page on a phone" width="34%">
 </p>
 
 ## How the listening works
