@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 
 test("new user sees an empty state with a clear first action", async ({ page }) => {
   await page.goto("/");

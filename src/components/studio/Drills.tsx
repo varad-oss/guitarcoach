@@ -7,6 +7,7 @@ import { ChordDiagram } from "@/components/ChordDiagram";
 import { PatternGrid } from "@/components/StrumEditor";
 import { BeatLights, ClarityPill, MicButton, MicProblem, RailSection, TransportButtons, paintBeat } from "./parts";
 import { useMic } from "@/lib/studio/useMic";
+import { getReady } from "@/lib/studio/getReady";
 import { usePlayback } from "@/lib/studio/usePlayback";
 import { buildSession } from "@/lib/studio/session";
 import { saveSession } from "@/lib/db/db";
@@ -222,7 +223,7 @@ export function ChordDrill({ settings, song }: { settings: Settings; song: Song 
           <p className="text-text-2">Play each chord shape until GuitarCoach hears it clearly, then move to the next.</p>
         </div>
         <div className="flex gap-2 items-center">
-          <MicButton mic={mic} />
+          <MicButton mic={mic} getReadyFirst={running} />
           <Button onClick={finish}>Finish</Button>
         </div>
       </div>
@@ -238,6 +239,7 @@ export function ChordDrill({ settings, song }: { settings: Settings; song: Song 
             disabled={chords.length === 0}
             onClick={async () => {
               if (mic.status !== "on") await mic.start();
+              if (!(await getReady())) return;
               setRunning(true);
               setIndex(0);
               setPromptAt(performance.now());
@@ -300,8 +302,12 @@ export function RhythmDrill({ settings, song }: { settings: Settings; song: Song
     [chosen, patternText, meter.beatsPerBar, spb],
   );
   const beatMap = useMemo(() => linearBeatMap(bpm, 0), [bpm]);
-  const pb = usePlayback({ blob: null, clockDuration: 3600, beatMap, beatsPerBar: meter.beatsPerBar, subdivisionsPerBeat: spb, bpm });
+  const listeningRef = useRef(false);
+  const pb = usePlayback({ blob: null, clockDuration: 3600, beatMap, beatsPerBar: meter.beatsPerBar, subdivisionsPerBeat: spb, bpm, getReadyFirst: () => listeningRef.current });
   const mic = useMic({ mode: "chords", a4: settings.a4, deviceId: settings.micDeviceId, latencyMs: settings.latencyMs });
+  useEffect(() => {
+    listeningRef.current = mic.status === "on";
+  }, [mic.status]);
   const [hits, setHits] = useState<StrumHit[]>([]);
   const [extra, setExtra] = useState(0);
   const [lastMsg, setLastMsg] = useState<{ text: string; tone: keyof typeof toneClass } | null>(null);
@@ -435,7 +441,7 @@ export function RhythmDrill({ settings, song }: { settings: Settings; song: Song
           <p className="text-text-2">Strum along with the click. GuitarCoach times each strum against the pattern.</p>
         </div>
         <div className="flex gap-2 items-center">
-          <MicButton mic={mic} />
+          <MicButton mic={mic} getReadyFirst={pb.playing} />
           <Button onClick={finish}>Finish</Button>
         </div>
       </div>
@@ -683,7 +689,7 @@ export function TransitionTrainer({ settings, song, initialPair }: { settings: S
           <p className="text-text-2">Switch between two chords as cleanly and quickly as you can for one minute.</p>
         </div>
         <div className="flex gap-2 items-center">
-          <MicButton mic={mic} />
+          <MicButton mic={mic} getReadyFirst={running} />
           <Button onClick={finish}>Finish</Button>
         </div>
       </div>
@@ -707,6 +713,7 @@ export function TransitionTrainer({ settings, song, initialPair }: { settings: S
             disabled={!validPair}
             onClick={async () => {
               if (mic.status !== "on") await mic.start();
+              if (!(await getReady())) return;
               startRound();
             }}
           >

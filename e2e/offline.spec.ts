@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { pasteSong } from "./helpers";
 
 test("after one visit the app and the library work offline", async ({ page, context }) => {

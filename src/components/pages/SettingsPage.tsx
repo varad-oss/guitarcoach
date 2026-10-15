@@ -8,6 +8,7 @@ import { createBackup, restoreBackup } from "@/lib/db/backup";
 import { downloadFile, useOnline, useSettings } from "@/lib/hooks";
 import { listInputDevices } from "@/lib/audio/mic";
 import { useMic } from "@/lib/studio/useMic";
+import { getReady } from "@/lib/studio/getReady";
 import { Metronome } from "@/lib/audio/metronome";
 import { resumeAudio } from "@/lib/audio/engine";
 import { computeLatency } from "@/lib/audio/latency";
@@ -89,6 +90,18 @@ export function SettingsPage() {
         </Field>
         <Field label="Reference pitch (A4)" htmlFor="a4" hint="440 Hz is standard. Change it only if you tune to a different reference.">
           <Input id="a4" type="number" min={415} max={466} value={settings.a4} onChange={(e) => update({ a4: Math.max(415, Math.min(466, Number(e.target.value) || 440)) })} className="w-28" />
+        </Field>
+        <Field label="Get-ready countdown" hint="Before listening starts (Play while listening, drills, calibration takes), so you can pick up your guitar. Esc cancels, Enter starts at once.">
+          <Segmented
+            label="Get-ready countdown"
+            value={String(settings.getReadySec) as "0" | "3" | "5"}
+            onChange={(v) => update({ getReadySec: Number(v) })}
+            options={[
+              { value: "0", label: "Off" },
+              { value: "3", label: "3 seconds" },
+              { value: "5", label: "5 seconds" },
+            ]}
+          />
         </Field>
         <Field label={`Metronome volume: ${Math.round(settings.metronome.volume * 100)}%`} htmlFor="metro-vol">
           <input id="metro-vol" type="range" min={0} max={1.2} step={0.05} value={settings.metronome.volume} onChange={(e) => update((s) => ({ ...s, metronome: { ...s.metronome, volume: Number(e.target.value) } }))} />
@@ -277,6 +290,7 @@ function LatencyCalibration({ latencyMs, onSave, onReset, deviceId, a4 }: { late
     setResult(null);
     onsets.current = [];
     if (mic.status !== "on") await mic.start();
+    if (!(await getReady())) return;
     await resumeAudio();
     const metro = new Metronome(null);
     metro.setVolume(1);

@@ -3,7 +3,7 @@
  * through a stubbed getUserMedia (see useFakeMic). They exercise the real
  * analysis pipeline, but not a real guitar or a real microphone.
  */
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { pasteSong, useFakeMic } from "./helpers";
 
 test.beforeEach(async ({ page }) => {

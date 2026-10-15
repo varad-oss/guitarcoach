@@ -55,6 +55,8 @@ Each learned template is blended 50/50 with the built-in one. A take that clearl
 
 Other tools: Free play (shows the chord it hears), Chord drill, Rhythm drill (strum timing against a pattern, tempo and drift), Chord changes trainer (one-minute changes), Tuner (standard tuning). Calibrate latency in Settings for accurate timing.
 
+**Get-ready countdown.** Anything that listens and judges waits 3 seconds after you press the button, so you can pick up the guitar. That covers Play while listening, turning listening on mid-song, starting a drill or the one-minute changes, recording a calibration take, and the latency check. Esc cancels, Enter starts at once, and Settings → Microphone and audio switches it between Off, 3 and 5 seconds. Free play and the tuner don't judge anything, so they start straight away.
+
 Keyboard in the studio: Space play/pause, ← → previous/next line, L loop section, M metronome, F follow, + / − speed.
 
 ## How it's built

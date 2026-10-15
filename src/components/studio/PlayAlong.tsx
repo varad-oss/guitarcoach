@@ -98,7 +98,10 @@ export function PlayAlong({
 
   const [videoEl, setVideoEl] = useState<HTMLDivElement | null>(null);
   const youtubeId = recording?.kind === "youtube" ? recording.youtubeId ?? null : null;
+  // While listening, pressing play counts down first so there's time to pick up the guitar.
+  const listeningRef = useRef(false);
   const pb = usePlayback({
+    getReadyFirst: () => listeningRef.current,
     blob,
     youtube: youtubeId ? { videoId: youtubeId, container: videoEl } : null,
     clockDuration,
@@ -108,6 +111,9 @@ export function PlayAlong({
     bpm,
   });
   const mic = useMic({ mode: "chords", a4: settings.a4, deviceId: settings.micDeviceId, latencyMs: settings.latencyMs, capo: song.capo });
+  useEffect(() => {
+    listeningRef.current = mic.status === "on";
+  }, [mic.status]);
 
   const [activeIdx, setActiveIdx] = useState(-1);
   const [displayTime, setDisplayTime] = useState(0);
@@ -509,7 +515,7 @@ export function PlayAlong({
           <span className="text-sm text-text-3">BPM</span>
         </div>
         <SpeedControl speed={pb.speed} onChange={pb.setSpeed} pitchPreserved={pb.pitchPreserved} />
-        <MicButton mic={mic} />
+        <MicButton mic={mic} getReadyFirst={pb.playing} />
         <Select aria-label="Practice mode" value={mode} onChange={(e) => onModeChange(e.target.value as PracticeMode)} className="h-9">
           {(["learn", "full-song", "performance", "chord-drill", "rhythm-drill", "free-play", "transition"] as PracticeMode[]).map((m) => (
             <option key={m} value={m}>

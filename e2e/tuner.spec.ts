@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { liveMicTracks, useFakeMic } from "./helpers";
 
 test("the tuner reads a plucked A string (synthetic audio) and releases the microphone afterwards", async ({ page }) => {

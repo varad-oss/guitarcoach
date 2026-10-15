@@ -28,6 +28,8 @@ export interface Settings {
   theme: "dark" | "light";
   /** Use templates learned from the player's own calibration takes. */
   usePersonalCalibration: boolean;
+  /** Seconds to count down before listening starts, to pick up the guitar (0 = off). */
+  getReadySec: number;
   /** When a setting that follows the player between devices last changed. */
   updatedAt?: string;
 }
@@ -60,6 +62,7 @@ export const DEFAULT_SETTINGS: Settings = {
   storageNoticeDismissed: false,
   theme: "dark",
   usePersonalCalibration: true,
+  getReadySec: 3,
 };
 
 export function withDefaults(s: Partial<Settings> | undefined): Settings {

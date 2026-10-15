@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { useFakeMic } from "./helpers";
 
 test("a blocked microphone is explained instead of failing silently", async ({ page }) => {

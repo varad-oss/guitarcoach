@@ -6,6 +6,7 @@ import { Metronome } from "../audio/metronome";
 import { getAudioContext, resumeAudio } from "../audio/engine";
 import { YouTubeTransport } from "../media/youtube";
 import type { BeatMap } from "../song/alignment";
+import { getReady } from "./getReady";
 
 export interface LoopRange {
   start: number;
@@ -26,6 +27,8 @@ export interface PlaybackOptions {
   subdivisionsPerBeat: number;
   /** BPM at 100% speed (for count-in). */
   bpm: number;
+  /** Checked when play is pressed: true runs the get-ready countdown first. */
+  getReadyFirst?: () => boolean;
 }
 
 export interface UsePlayback {
@@ -61,6 +64,11 @@ export interface UsePlayback {
 }
 
 export function usePlayback(o: PlaybackOptions): UsePlayback {
+  // Asked at the moment play is pressed: count down first (e.g. while listening).
+  const getReadyFirst = useRef(o.getReadyFirst);
+  useEffect(() => {
+    getReadyFirst.current = o.getReadyFirst;
+  });
   const [transport, setTransport] = useState<Transport | null>(null);
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -177,6 +185,12 @@ export function usePlayback(o: PlaybackOptions): UsePlayback {
     const t = tRef.current;
     if (!t || t.isPlaying() || countingIn) return;
     await resumeAudio();
+    if (getReadyFirst.current?.()) {
+      setCountingIn(true);
+      const go = await getReady();
+      setCountingIn(false);
+      if (!go) return;
+    }
     if (loopRef.current) {
       const now = t.getTime();
       if (now < loopRef.current.start || now >= loopRef.current.end) t.seek(loopRef.current.start);

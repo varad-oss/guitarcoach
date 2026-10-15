@@ -1,6 +1,7 @@
 import path from "node:path";
 import { writeFileSync } from "node:fs";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "./test";
+import type { Page } from "@playwright/test";
 import { lyricsOf, pasteSong } from "./helpers";
 
 const SHEET_HTML = `<html><body style="font-family: Courier, monospace; font-size: 18px; white-space: pre; padding: 24px; background: white; color: black;">[Verse]

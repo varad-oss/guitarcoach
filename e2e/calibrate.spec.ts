@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { useFakeMic } from "./helpers";
 
 // The simulated microphone plays SYNTHETIC G-chord strums.

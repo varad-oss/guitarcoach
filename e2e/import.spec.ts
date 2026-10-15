@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { lyricsOf, pasteSong, SHEET } from "./helpers";
 
 test("paste → preview → edit a chord → save → still there after reload", async ({ page }) => {

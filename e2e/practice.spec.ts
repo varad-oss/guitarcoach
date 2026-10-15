@@ -1,5 +1,5 @@
 import path from "node:path";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { lyricsOf, pasteSong } from "./helpers";
 
 test("the studio follows playback: active chord advances and the sheet scrolls", async ({ page }) => {

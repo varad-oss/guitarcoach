@@ -4,6 +4,7 @@ import { forwardRef, useState, type ReactNode } from "react";
 import { Button, IconButton, Meter, Pill, Select, cx } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import type { UseMic } from "@/lib/studio/useMic";
+import { getReady } from "@/lib/studio/getReady";
 import type { LiveDetection } from "@/lib/coach/chordTracker";
 import { chordsCompatible } from "@/lib/music/chords";
 import { formatTime } from "@/lib/hooks";
@@ -70,7 +71,11 @@ export function SpeedControl({ speed, onChange, pitchPreserved }: { speed: numbe
   );
 }
 
-export function MicButton({ mic }: { mic: UseMic }) {
+/**
+ * `getReadyFirst`: count down before listening starts, for when turning it on
+ * starts judging straight away (e.g. the song is already playing).
+ */
+export function MicButton({ mic, getReadyFirst = false }: { mic: UseMic; getReadyFirst?: boolean }) {
   const on = mic.status === "on";
   const label = {
     off: "Microphone off",
@@ -88,7 +93,11 @@ export function MicButton({ mic }: { mic: UseMic }) {
         size="sm"
         variant={on ? "secondary" : "primary"}
         icon={on ? "mic" : "micOff"}
-        onClick={() => (on ? mic.stop() : void mic.start())}
+        onClick={async () => {
+          if (on) return mic.stop();
+          if (getReadyFirst && !(await getReady())) return;
+          await mic.start();
+        }}
         disabled={mic.status === "starting" || mic.status === "unsupported"}
         aria-pressed={on}
         data-testid="mic-toggle"

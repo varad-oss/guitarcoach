@@ -254,6 +254,18 @@ body {
   scrollbar-color: var(--line) transparent;
 }
 
+/* Get-ready countdown: each number settles in from slightly larger. */
+@keyframes getready {
+  from {
+    transform: scale(1.25);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

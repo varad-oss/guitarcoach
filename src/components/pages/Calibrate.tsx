@@ -5,6 +5,7 @@ import { Button, ConfirmDialog, IconButton, Input, Notice, PageHeader, Pill, Spi
 import { ChordDiagram } from "@/components/ChordDiagram";
 import { MicButton, MicProblem } from "@/components/studio/parts";
 import { useMic } from "@/lib/studio/useMic";
+import { getReady } from "@/lib/studio/getReady";
 import { getCalibration, listSongs, saveCalibration } from "@/lib/db/db";
 import { useLiveQuery, useSettings, relativeDate } from "@/lib/hooks";
 import { checkTake, evaluateCalibration, type CalibrationFrame } from "@/lib/dsp/calibration";
@@ -127,6 +128,7 @@ export function Calibrate() {
   async function start(chord: string) {
     setMessage(null);
     if (mic.status !== "on") await mic.start();
+    if (!(await getReady(`Get ready to play ${chord}`))) return;
     setTake({ phase: "listening", chord, frames: [], onsets: [], startedAt: performance.now() });
   }
 

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { lyricsOf } from "./helpers";
 import { fakeYouTube } from "./fake-youtube";
 

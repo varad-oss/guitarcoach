@@ -10,6 +10,8 @@ import { getCalibration } from "@/lib/db/db";
 import { buildProfile } from "@/lib/dsp/calibration";
 import { setPersonalProfile } from "@/lib/dsp/chordTemplates";
 import { startAccount, useAccount, type AccountState } from "@/lib/sync/account";
+import { setGetReadySeconds } from "@/lib/studio/getReady";
+import { GetReadyOverlay } from "./GetReadyOverlay";
 
 /** Sidebar / header button for the account, showing whether sync is healthy. */
 function AccountLink({ account, compact, online }: { account: AccountState; compact?: boolean; online: boolean }) {
@@ -68,6 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const account = useAccount();
 
   useEffect(() => startAccount(), []);
+  useEffect(() => setGetReadySeconds(settings.getReadySec), [settings.getReadySec]);
 
   // Apply the player's personal chord templates everywhere chords are judged.
   useEffect(() => {
@@ -88,6 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh flex">
+      <GetReadyOverlay />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 bg-surface px-3 py-2 rounded-lg">
         Skip to content
       </a>
