@@ -52,6 +52,7 @@ Status legend: [x] done and verified by tests and/or in the browser, [~] done wi
 - [x] Import all UG chord voicings with fingers and barres; voicing switcher with "Use this one"
 - [x] Import rating, difficulty, author, views, original key, tuning; list other versions with one-click import (paid ones listed, not fetched)
 - [x] Transpose / capo / simplify / chords on-off toolbar (song page and studio), key status, detection follows it
+- [x] "Easiest shapes": one click to simplified chords and the capo position with the easiest (open) shapes, same sound
 - [x] Play along with a YouTube video (official embedded player): speed, loop, seek, tap-along alignment
 - [x] Bookmarklet sends the same full UG page data
 

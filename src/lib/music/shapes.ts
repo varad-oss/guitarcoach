@@ -95,6 +95,22 @@ export function shapeForChord(symbol: string): Frets | null {
   return (useA ? pick(A_SHAPES, aFret) ?? pick(E_SHAPES, eFret) : pick(E_SHAPES, eFret) ?? pick(A_SHAPES, aFret)) ?? null;
 }
 
+/** Open shapes that still need a full barre or a big stretch. */
+const HARD_OPEN = new Set(["F", "Bm"]);
+
+/**
+ * Rough difficulty of the easiest common shape for a chord: 1 for open-position
+ * chords (G, C, Am, D7 …), 3 for barre chords, 3.5 when there's no known shape.
+ */
+export function chordDifficulty(symbol: string): number {
+  const c = parseChord(symbol);
+  if (!c) return 3.5;
+  for (const name of [c.symbol, transposeChord(c.symbol, 0, false), c.rootName + c.suffix, transposeChord(c.rootName + c.suffix, 0, false)]) {
+    if (OPEN_SHAPES[name]) return HARD_OPEN.has(name) ? 3 : 1;
+  }
+  return shapeForChord(symbol) ? 3 : 3.5;
+}
+
 /** Sounding MIDI notes for a shape, accounting for a capo. */
 export function shapeToMidi(frets: Frets, capo = 0, tuning = STANDARD_TUNING_MIDI): number[] {
   const notes: number[] = [];

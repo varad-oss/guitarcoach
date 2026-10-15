@@ -6,6 +6,7 @@
  */
 
 import { keyPrefersFlats, parseChord, pcToName, transposeChord } from "./chords";
+import { chordDifficulty } from "./shapes";
 import { DEFAULT_DISPLAY, type DisplayPrefs, type Song } from "../song/model";
 
 /** Reduces a chord to its basic triad: Cadd9 → C, Em7 → Em, D/F# → D, Dsus4 → D. */
@@ -99,4 +100,51 @@ export function applyDisplay(song: Song, prefs: DisplayPrefs = prefsOf(song)): S
     // Written voicings only still apply to chords whose name didn't change; others come from the chord library.
     chordShapes: prefs.transpose === 0 ? Object.fromEntries(Object.entries(song.chordShapes).filter(([name]) => map(name) === name)) : {},
   };
+}
+
+export interface EasiestShapes {
+  capo: number;
+  transpose: number;
+  /** The distinct chords you'd play, most frequent first. */
+  chords: string[];
+  /** Share of chord changes that use open-position shapes. */
+  openShare: number;
+}
+
+/**
+ * The capo position (0–7) whose shapes are easiest to play while the song
+ * sounds exactly as written: chords are simplified, then each position is
+ * scored by how hard its shapes are, weighted by how often each chord comes
+ * up, with a small preference for a lower capo.
+ */
+export function easiestShapes(song: Pick<Song, "key" | "capo" | "sections">, maxCapo = 7): EasiestShapes | null {
+  const counts = new Map<string, number>();
+  for (const s of song.sections) for (const l of s.lines) for (const c of l.chords) {
+    const simple = simplifyChord(c.chord);
+    if (parseChord(simple)) counts.set(simple, (counts.get(simple) ?? 0) + 1);
+  }
+  const total = [...counts.values()].reduce((a, b) => a + b, 0);
+  if (!total) return null;
+  let best: (EasiestShapes & { score: number }) | null = null;
+  for (let capo = 0; capo <= maxCapo; capo++) {
+    const prefs: DisplayPrefs = { ...DEFAULT_DISPLAY, simplify: true, capo, transpose: song.capo - capo };
+    const map = chordMapper(song, prefs);
+    let difficulty = 0;
+    let open = 0;
+    const shown = new Map<string, number>();
+    for (const [chord, n] of counts) {
+      const played = map(chord);
+      const d = chordDifficulty(played);
+      difficulty += d * n;
+      if (d === 1) open += n;
+      shown.set(played, (shown.get(played) ?? 0) + n);
+    }
+    const score = difficulty / total + 0.04 * capo + (capo > 5 ? 0.15 : 0);
+    if (!best || score < best.score - 1e-9) {
+      best = { capo, transpose: prefs.transpose, score, openShare: open / total, chords: [...shown.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c) };
+    }
+  }
+  const { score: _score, ...result } = best!;
+  void _score;
+  return result;
 }

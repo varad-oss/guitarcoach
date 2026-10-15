@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyDisplay, chordMapper, pitchOffset, shownKey, simplifyChord, soundingKey } from "./display";
+import { applyDisplay, chordMapper, easiestShapes, pitchOffset, shownKey, simplifyChord, soundingKey } from "./display";
 import { createEmptySong, DEFAULT_DISPLAY } from "../song/model";
 import { parseChordSheet } from "../parse/chordSheet";
 
@@ -39,5 +39,45 @@ describe("display transforms", () => {
     expect(t.chordShapes).toEqual({});
     expect(applyDisplay(s, DEFAULT_DISPLAY)).toBe(s);
     expect(s.sections[0].lines[0].chords[0].chord).toBe("G");
+  });
+});
+
+describe("easiestShapes", () => {
+  const songOf = (chords: string[], capo = 0, key?: string) => ({
+    key,
+    capo,
+    sections: [{ lines: [{ chords: chords.map((chord) => ({ chord })) }] }],
+  }) as unknown as Parameters<typeof easiestShapes>[0];
+
+  it("finds capo 1 with G-family shapes for a song written in Ab", () => {
+    const r = easiestShapes(songOf(["Ab", "Fm", "Db", "Eb", "Ab", "Fm", "Db", "Eb"], 0, "Ab"))!;
+    expect(r).toMatchObject({ capo: 1, transpose: -1 });
+    expect(new Set(r.chords)).toEqual(new Set(["G", "Em", "C", "D"]));
+    expect(r.openShare).toBe(1);
+  });
+
+  it("keeps the song sounding the same", () => {
+    const song = songOf(["Bb", "Gm", "Eb", "F"], 0, "Bb");
+    const r = easiestShapes(song)!;
+    expect(pitchOffset(song as never, { ...DEFAULT_DISPLAY, capo: r.capo, transpose: r.transpose, simplify: true })).toBe(0);
+    expect(r.openShare).toBe(1);
+  });
+
+  it("leaves an already-easy song alone", () => {
+    expect(easiestShapes(songOf(["G", "D", "Em", "C"]))).toMatchObject({ capo: 0, transpose: 0, openShare: 1 });
+  });
+
+  it("respects a written capo (UG: key Ab, capo 1, G shapes)", () => {
+    expect(easiestShapes(songOf(["G", "Em", "C", "D"], 1, "Ab"))).toMatchObject({ capo: 1, transpose: 0 });
+  });
+
+  it("simplifies extended chords first", () => {
+    const r = easiestShapes(songOf(["Cadd9", "D/F#", "Em7", "Gsus4"]))!;
+    expect(r.capo).toBe(0);
+    expect(new Set(r.chords)).toEqual(new Set(["C", "D", "Em", "G"]));
+  });
+
+  it("returns null when there are no chords", () => {
+    expect(easiestShapes(songOf([]))).toBeNull();
   });
 });
