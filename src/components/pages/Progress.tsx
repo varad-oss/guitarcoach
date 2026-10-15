@@ -19,7 +19,7 @@ export function Progress() {
 
   if (sessions.length === 0) {
     return (
-      <div className="px-4 md:px-8 py-6 max-w-[900px]">
+      <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[900px]">
         <PageHeader title="Progress" />
         <div className="rounded-xl border border-line-soft px-6 py-12 text-center flex flex-col items-center gap-3">
           <p className="text-lg">No practice recorded yet</p>
@@ -63,7 +63,7 @@ export function Progress() {
   }
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1100px] flex flex-col gap-10">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px] flex flex-col gap-10">
       <PageHeader title="Progress" description="Everything here comes from sessions you've finished on this device." />
 
       <section className="grid grid-cols-2 md:grid-cols-4 border-y border-line-soft">

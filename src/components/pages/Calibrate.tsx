@@ -136,7 +136,7 @@ export function Calibrate() {
   const withPersonal = report.filter((r) => r.personal);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1100px] flex flex-col gap-6">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px] flex flex-col gap-6">
       <PageHeader
         title="Chord calibration"
         description="Play each chord a few times so GuitarCoach learns how your guitar, strings, microphone and room sound. The takes are saved on this device and also become a test set showing how well chords are recognised for you."

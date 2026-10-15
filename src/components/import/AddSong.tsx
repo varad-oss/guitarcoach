@@ -204,7 +204,7 @@ export function AddSong() {
 
   if (draft) {
     return (
-      <div className="px-4 md:px-8 py-6 max-w-[1280px]">
+      <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1280px]">
         <PageHeader
           title="Check and save"
           description={
@@ -229,7 +229,7 @@ export function AddSong() {
   }
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1040px]">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px]">
       <PageHeader title="Add a song" description="Bring in a song from a link, a file, a recording, or by typing it. Everything is saved on this device." />
 
       <div role="tablist" aria-label="Ways to add a song" className="flex flex-wrap gap-2 mb-6">

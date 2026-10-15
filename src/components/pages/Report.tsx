@@ -72,7 +72,7 @@ function ReportView({ s }: { s: PracticeSession }) {
   const isPlayAlong = ["learn", "full-song", "performance"].includes(s.mode);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1000px] flex flex-col gap-8">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px] flex flex-col gap-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm text-text-3">

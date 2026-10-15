@@ -43,7 +43,7 @@ export function SongsLibrary() {
   const total = songs.data.length;
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1100px]">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px]">
       <PageHeader
         title="My Songs"
         description={total ? `${total} song${total === 1 ? "" : "s"} saved on this device.` : undefined}

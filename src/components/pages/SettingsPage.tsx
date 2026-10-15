@@ -61,7 +61,7 @@ export function SettingsPage() {
   const mb = (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`;
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1000px] flex flex-col gap-8">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px] flex flex-col gap-8">
       <PageHeader title="Settings" description="Saved on this device." />
 
       <Section id="appearance" title="Display" description="For reading at a distance from your guitar.">

@@ -122,7 +122,7 @@ function StudioHome() {
   const songs = useLiveQuery(listSongs, []);
   const list = songs.status === "ready" ? [...songs.data].sort((a, b) => (b.lastPlayedAt ?? b.createdAt).localeCompare(a.lastPlayedAt ?? a.createdAt)) : [];
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1100px]">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px]">
       <PageHeader title="Practice Studio" description="Pick a song to play along with, or use one of the tools." />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section>

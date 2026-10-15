@@ -15,12 +15,13 @@ export function AccountPage() {
   useEffect(() => {
     // Google or the email link can come back with an error in the address.
     const params = new URLSearchParams(window.location.search + "&" + window.location.hash.slice(1));
-    const err = params.get("error_description");
+    const raw = params.get("error_description");
+    const err = raw && /not enabled|unsupported provider/i.test(raw) ? "Google sign-in isn't switched on for this site yet. Use your email for now." : raw;
     if (err) queueMicrotask(() => setUrlError(err.replace(/\+/g, " ")));
   }, []);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[760px]">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[760px]">
       <PageHeader
         title="Account"
         description="Sign in to keep your songs, edits, recordings, practice history and chord calibration in sync between this device and your others. Everything still works offline and syncs when you're back online."

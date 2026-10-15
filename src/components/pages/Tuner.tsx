@@ -52,7 +52,7 @@ export function Tuner() {
   const needle = Math.max(-50, Math.min(50, cents));
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[860px] flex flex-col gap-6">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[860px] flex flex-col gap-6">
       <PageHeader title="Tuner" description={`Standard tuning (E A D G B E), A4 = ${settings.a4} Hz. Play one string at a time.`} actions={<MicButton mic={mic} />} />
       <MicProblem mic={mic} />
       <Segmented

@@ -8,7 +8,7 @@ import { useSyncExternalStore } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { notify, onDbChange, setAudioFallback } from "../db/db";
 import { fetchMissingAudio, runSync, type SyncResult } from "./engine";
-import { accountsEnabled, supabase, supabaseRemote } from "./supabase";
+import { accountsEnabled, googleSignInEnabled, supabase, supabaseRemote } from "./supabase";
 
 export interface AccountState {
   enabled: boolean;
@@ -138,6 +138,8 @@ export async function verifyEmailCode(email: string, token: string): Promise<voi
 export async function signInWithGoogle(): Promise<void> {
   const sb = supabase();
   if (!sb) throw new Error("Accounts aren't set up on this copy of GuitarCoach.");
+  // With the provider off, Supabase shows a bare error page instead of coming back here.
+  if (!(await googleSignInEnabled())) throw new Error("Google sign-in isn't switched on for this site yet. Use your email for now.");
   const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: returnUrl() } });
   if (error) throw new Error(error.message);
 }

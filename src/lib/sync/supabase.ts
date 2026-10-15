@@ -28,6 +28,18 @@ export function supabase(): SupabaseClient | null {
   return client;
 }
 
+/** Whether Google sign-in is switched on in the Supabase project (public settings). */
+export async function googleSignInEnabled(): Promise<boolean> {
+  if (!URL || !KEY) return false;
+  try {
+    const res = await fetch(`${URL}/auth/v1/settings`, { headers: { apikey: KEY } });
+    const settings = (await res.json()) as { external?: { google?: boolean } };
+    return settings.external?.google === true;
+  } catch {
+    return true; // can't tell: let Supabase answer
+  }
+}
+
 const PAGE = 500;
 
 export function supabaseRemote(sb: SupabaseClient, userId: string): Remote {

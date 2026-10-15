@@ -63,7 +63,7 @@ function SongView({ song, justSaved, initialTab }: { song: Song; justSaved: bool
   const sounding = (c: string) => (shown.capo ? transposeChord(c, shown.capo, keyPrefersFlats(soundingKey(song, prefs) ?? song.key)) : c);
 
   return (
-    <div className="px-4 md:px-8 py-6 max-w-[1200px]">
+    <div className="px-4 md:px-8 py-6 mx-auto w-full max-w-[1200px]">
       <header className="flex flex-wrap items-start justify-between gap-4 mb-5">
         <div className="min-w-0">
           <Link href="/songs" className="text-sm text-text-3 hover:text-text inline-flex items-center gap-1 mb-1">

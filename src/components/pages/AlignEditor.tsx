@@ -221,7 +221,7 @@ function AlignEditor({ song, rec, blob, onReload }: { song: Song; rec: Recording
   const laneH = 150;
 
   return (
-    <div className="px-4 md:px-8 py-6 flex flex-col gap-5 max-w-[1400px]">
+    <div className="px-4 md:px-8 py-6 flex flex-col gap-5 mx-auto w-full max-w-[1400px]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link href={`/song?id=${song.id}&tab=audio`} className="text-sm text-text-3 hover:text-text inline-flex items-center gap-1 mb-1">

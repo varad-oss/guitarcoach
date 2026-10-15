@@ -7,6 +7,7 @@ import { Button, ButtonLink, Input, Notice, Spinner, cx } from "@/components/ui"
 import { Icon } from "@/components/icons";
 import { listSessions, listSongs, saveSettings } from "@/lib/db/db";
 import { formatDuration, relativeDate, useLiveQuery, useSettings } from "@/lib/hooks";
+import { useAccount } from "@/lib/sync/account";
 import type { Song } from "@/lib/song/model";
 import type { PracticeSession } from "@/lib/coach/types";
 import { MODE_LABELS } from "@/lib/coach/types";
@@ -91,7 +92,7 @@ export function Home() {
 
   if (all.length === 0) {
     return (
-      <div className="px-4 md:px-10 py-10 md:py-16 max-w-[880px]">
+      <div className="px-4 md:px-10 py-10 md:py-16 mx-auto w-full max-w-[880px]">
         <div className="flex flex-col gap-6">
           <EmptyFretboard />
           <div>
@@ -129,7 +130,7 @@ export function Home() {
   const totalSec = sess.reduce((a, s) => a + s.activeSec, 0);
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[1180px] flex flex-col gap-10">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[1200px] flex flex-col gap-10">
       <section className="flex flex-col lg:flex-row gap-6 lg:items-end justify-between">
         <div className="min-w-0">
           {resume ? (
@@ -224,13 +225,20 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
 }
 
 function StorageNotice() {
+  const account = useAccount();
+  if (account.user) return null; // synced to the account, so clearing the browser doesn't lose anything
   return (
     <Notice
       tone="info"
       title="Your songs live in this browser"
       action={
         <>
-          <ButtonLink href="/settings#data" size="sm">
+          {account.enabled && (
+            <ButtonLink href="/account" size="sm">
+              Sign in to sync
+            </ButtonLink>
+          )}
+          <ButtonLink href="/settings#data" size="sm" variant={account.enabled ? "ghost" : undefined}>
             Back up now
           </ButtonLink>
           <Button size="sm" variant="ghost" onClick={() => saveSettings({ storageNoticeDismissed: true })}>
@@ -239,7 +247,9 @@ function StorageNotice() {
         </>
       }
     >
-      There&apos;s no account. Clearing this site&apos;s browser data deletes your songs and recordings unless you&apos;ve exported a backup.
+      {account.enabled
+        ? "Clearing this site's browser data deletes your songs and recordings unless you've signed in (they're then kept in your account) or exported a backup."
+        : "Clearing this site's browser data deletes your songs and recordings unless you've exported a backup."}
     </Notice>
   );
 }

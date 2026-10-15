@@ -86,7 +86,7 @@ export function FreePlay({ settings, song }: { settings: Settings; song: Song | 
   }
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[980px] flex flex-col gap-6">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[980px] flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[26px] font-semibold">Free play</h1>
@@ -215,7 +215,7 @@ export function ChordDrill({ settings, song }: { settings: Settings; song: Song 
   const avgMs = done.length ? Math.round(done.reduce((a, r) => a + (r.ms ?? 0), 0) / done.length) : null;
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[1000px] flex flex-col gap-6">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[1000px] flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[26px] font-semibold">Chord drill</h1>
@@ -428,7 +428,7 @@ export function RhythmDrill({ settings, song }: { settings: Settings; song: Song
   }
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[1100px] flex flex-col gap-6">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[1100px] flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[26px] font-semibold">Rhythm drill</h1>
@@ -676,7 +676,7 @@ export function TransitionTrainer({ settings, song, initialPair }: { settings: S
   const validPair = !!parseChord(a) && !!parseChord(b) && normaliseChord(a) !== normaliseChord(b);
 
   return (
-    <div className="px-4 md:px-10 py-8 max-w-[1000px] flex flex-col gap-6">
+    <div className="px-4 md:px-10 py-8 mx-auto w-full max-w-[1000px] flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[26px] font-semibold">Chord changes</h1>
