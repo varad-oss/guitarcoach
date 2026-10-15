@@ -7,9 +7,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Remote, RemoteRow } from "./engine";
 
+/** Accepts the project URL with or without the "/rest/v1/" API path the dashboard also shows. */
+export function projectUrl(raw: string | undefined): string | undefined {
+  return raw?.trim().replace(/\/+$/, "").replace(/\/rest\/v1$/, "") || undefined;
+}
+
 // Literal references so Next.js inlines them at build time.
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const URL = projectUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
 
 export const accountsEnabled = Boolean(URL && KEY);
 

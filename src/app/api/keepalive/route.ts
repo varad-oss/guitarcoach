@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { projectUrl } from "@/lib/sync/supabase";
 
 /**
  * Called once a day by Vercel Cron (vercel.json). Free Supabase projects pause
@@ -12,8 +13,8 @@ export async function GET(req: Request) {
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401, headers });
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const url = projectUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !key) return NextResponse.json({ ok: true, skipped: "accounts not configured" }, { headers });
   try {
     const res = await fetch(`${url}/rest/v1/records?select=id&limit=1`, {
