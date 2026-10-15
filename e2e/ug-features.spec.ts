@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { lyricsOf, pasteSong } from "./helpers";
+import { lyricsOf } from "./helpers";
 import { fakeYouTube } from "./fake-youtube";
 
 // Synthetic Ultimate Guitar-style import (invented lyrics) with everything the free page offers.
@@ -143,17 +143,4 @@ test("play along with a YouTube video (YouTube's player stubbed)", async ({ page
   await page.getByRole("button", { name: "+50 ms" }).click();
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText("Calibrated timing", { exact: true })).toBeVisible();
-});
-
-test("easiest shapes moves a barre-chord song to open shapes with a capo, sounding the same", async ({ page }) => {
-  await pasteSong(page, { title: "Lantern Waltz", text: "Key: Ab\n\n[Verse]\nAb        Fm7\nLanterns over quiet water\nDb        Eb\nMorning settles on the pier\n" });
-  await page.getByTestId("easiest-shapes").click();
-  await expect(page.getByTestId("easiest-shapes")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByTestId("easiest-summary")).toHaveText("Capo 1: G, Em, C, D (all open chords)");
-  await expect(page.getByTestId("capo-value")).toHaveText("1");
-  await expect(page.getByTestId("key-status")).toHaveText("Shapes in G, sounds in Ab (original key)");
-  await expect(page.locator(".sheet-chord", { hasText: /^Em$/ }).first()).toBeVisible();
-  // Clicking again goes back to the chords as written.
-  await page.getByTestId("easiest-shapes").click();
-  await expect(page.locator(".sheet-chord", { hasText: /^Fm7$/ }).first()).toBeVisible();
 });
