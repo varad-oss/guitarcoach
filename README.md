@@ -48,7 +48,7 @@ Every session ends with a report: chords correct, changes on time, timing error 
 </table>
 
 ### Tools for the fundamentals
-| | |
+| Tool | What it does |
 | --- | --- |
 | **Chord calibration** | Record a few takes and it learns how *your* guitar, strings, mic and room sound, with a before-and-after report. |
 | **Chord changes** | One-minute changes between two chords: clean changes, average change time and consistency. |
@@ -125,7 +125,7 @@ npm run test:e2e    # 31 browser tests (run npm run build first)
 
 ## Documentation
 
-| | |
+| Page | What's in it |
 | --- | --- |
 | [User guide](docs/user-guide.md) | Every screen and shortcut |
 | [How it works](docs/architecture.md) | Code layout, data model, audio pipeline, importers and SSRF protection |
