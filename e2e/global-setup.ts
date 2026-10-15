@@ -33,4 +33,15 @@ export default function globalSetup() {
   addNoise(rec, 0.002);
   normalise(rec, 0.8);
   writeFileSync(path.join(dir, "progression-100bpm.wav"), encodeWav(rec, sr2));
+
+  // README screenshots: a "player" strumming G Em C D at 100 BPM (two strums a beat),
+  // who plays Am instead of C once, so the report shows a wrong chord.
+  const take = ["G", "Em", "C", "D", "G", "Em", "Am", "D", "G", "Em", "C", "D", "G", "Em", "C", "D"];
+  const pt = new Float32Array(Math.ceil(sr2 * (0.15 + take.length * 4 * spb + 1.5)));
+  for (let bar = 0; bar < take.length; bar++)
+    for (let half = 0; half < 8; half++)
+      strum(pt, sr2, 0.15 + (bar * 8 + half) * (spb / 2), shapeForChord(take[bar])!, { seed: bar * 8 + half + 7, direction: half % 2 ? "up" : "down", amp: half === 0 ? 0.3 : 0.18, maxSec: 1 });
+  addNoise(pt, 0.002);
+  normalise(pt, 0.75);
+  writeFileSync(path.join(dir, "practice-take.wav"), encodeWav(pt, sr2));
 }

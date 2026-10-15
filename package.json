@@ -15,7 +15,8 @@
     "test:live": "LIVE_IMPORT=1 vitest run src/lib/import/live.test.ts",
     "test:e2e": "playwright test",
     "eval:guitarset": "GUITARSET=1 vitest run src/lib/dsp/guitarset.eval.test.ts",
-    "test:all": "npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e"
+    "test:all": "npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e",
+    "screenshots": "SCREENSHOTS=1 playwright test e2e/screenshots.spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",

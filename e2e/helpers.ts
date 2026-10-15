@@ -44,7 +44,7 @@ export async function pasteSong(page: Page, opts: { title: string; artist?: stri
  * real code path. (Chromium's own fake-capture flags were tried first, but they
  * still wait for the operating system's microphone permission on macOS.)
  */
-export async function useFakeMic(page: Page, fixture: "g-strums" | "a-string" | "deny") {
+export async function useFakeMic(page: Page, fixture: "g-strums" | "a-string" | "practice-take" | "deny") {
   if (fixture !== "deny") {
     const { readFileSync } = await import("node:fs");
     const path = await import("node:path");
